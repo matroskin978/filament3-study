@@ -6,6 +6,8 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -30,8 +32,27 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('My Site')
             ->brandLogo(asset('logo.svg'))
             ->brandLogoHeight('50px')
+//            ->profile()
 //            ->registration()
 //            ->passwordReset()
+            ->navigationGroups([
+                NavigationGroup::make('Блог')
+                    ->collapsed(),
+                NavigationGroup::make('Ссылки')
+                    ->collapsed(),
+            ])
+            ->navigationItems([
+                NavigationItem::make('Google')
+                    ->url('https://google.com', true)
+                    ->icon('heroicon-o-bookmark')
+                    ->group('Ссылки')
+                    ->sort(2),
+                NavigationItem::make('YouTube')
+                    ->url('https://youtube.com', true)
+                    ->icon('heroicon-o-archive-box-arrow-down')
+                    ->group('Ссылки')
+                    ->sort(1),
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
