@@ -6,12 +6,14 @@ use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class CategoryResource extends Resource
 {
@@ -32,8 +34,39 @@ class CategoryResource extends Resource
     {
         return $form
             ->schema([
-                //
-            ]);
+                TextInput::make('title')
+                    ->default('Test article')
+                    ->helperText(new HtmlString('Helper text for <strong>title</strong>'))
+                    ->hint('Hint for title')
+                    ->hintIcon('heroicon-m-language', 'Tooltip for title')
+                    ->hintColor('primary')
+//                    ->disabled()
+                    ->disabledOn('edit')
+                    ->hiddenOn('edit')
+                    ->autofocus()
+                    ->required()
+                    ->columnSpan(2)
+                    ->label('Наименование'),
+                TextInput::make('slug'),
+                Forms\Components\Select::make('status')->options([
+                    1 => 'Draft', 'Published', 'Reviewing'
+                ])
+//                    ->native(false)
+                    ->multiple()
+                    ->searchable(),
+                Forms\Components\DatePicker::make('published_at')
+                    ->native(false)
+                    ->locale('ru')
+                    ->format('Y-m-d')
+                    ->minDate(now()->subDays(7))
+                    ->maxDate(now()->addDays(7))
+                    ->closeOnDateSelection()
+                    ->displayFormat('d M Y'),
+                TextInput::make('email')->email(),
+                TextInput::make('password')->password()->revealable(),
+                TextInput::make('phone')->tel()->placeholder('xxx xxx-xx-xx')->mask('999 999-99-99'),
+                TextInput::make('domain')->prefix('https://')->suffix('.com')->suffixIcon('heroicon-m-globe-alt'),
+            ])->columns(2);
     }
 
     public static function table(Table $table): Table
