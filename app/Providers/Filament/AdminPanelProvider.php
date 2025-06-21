@@ -53,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
                     ->group('Ссылки')
                     ->sort(1),
             ])
+            ->sidebarCollapsibleOnDesktop()
             ->colors([
                 'primary' => Color::Amber,
             ])
