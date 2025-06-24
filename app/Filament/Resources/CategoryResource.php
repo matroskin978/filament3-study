@@ -41,50 +41,77 @@ class CategoryResource extends Resource
         return $form
             ->schema([
 
-                Forms\Components\Group::make()->schema([
+                Forms\Components\Wizard::make([
 
-                    Forms\Components\Section::make('Основное')->description('Основная информация о пользователе')->icon('heroicon-o-user')->schema([
-                        TextInput::make('first_name'),
+                    Forms\Components\Wizard\Step::make('Основное')->icon('heroicon-o-user')->schema([
+                        TextInput::make('first_name')->required(),
                         TextInput::make('middle_name'),
                         TextInput::make('last_name'),
                         TextInput::make('email')->email(),
                         TextInput::make('password')->password()->revealable()->columnSpan('full'),
-                    ])->columns(2)->collapsible(),
+                    ])->columns(2),
 
-                    Forms\Components\Section::make('Контакты')->description('Контактная информация пользователя')->icon('heroicon-o-map')->schema([
+                    Forms\Components\Wizard\Step::make('Контакты')->icon('heroicon-o-map')->schema([
                         Select::make('country')->options(['Country 1', 'Country 2', 'Country 3']),
                         Select::make('city')->options(['City 1', 'City 2', 'City 3']),
                         Select::make('street')->options(['Street 1', 'Street 2', 'Street 3']),
-                        TextInput::make('zip'),
+                        TextInput::make('zip')->required(),
                         TextInput::make('phone')->tel()->mask('+99 999 999-99-99'),
-                    ])->columns(2)->collapsible(),
+                    ])->columns(2),
 
-                ])->columnSpan(2),
-
-                Forms\Components\Group::make()->schema([
-
-                    Forms\Components\Section::make('Дополнительно')->description('Дополнительная информация о пользователе')->icon('heroicon-o-user')->schema([
+                    Forms\Components\Wizard\Step::make('Дополнительно')->icon('heroicon-o-user')->schema([
                         Select::make('dob')->options(
                             array_combine(
                                 range(date('Y'), 1900),
                                 range(date('Y'), 1900),
                             )
                         ),
-                        Radio::make('gender')->options(['Male', 'Female'])->inline(),
-                    ])->collapsible(),
+                        Radio::make('gender')->options(['Male', 'Female']),
+                    ])->columns(2),
 
-                    Forms\Components\Section::make('Аватар')->description('И  еще немного')->icon('heroicon-o-user')->schema([
+                    Forms\Components\Wizard\Step::make('Аватар и примечение')->icon('heroicon-o-user')->schema([
                         FileUpload::make('avatar')->image(),
-                    ])->collapsible()->collapsed(),
-
-                    Forms\Components\Section::make('Примечаение')->description('И  еще чуть-чуть')->icon('heroicon-o-user')->schema([
                         Forms\Components\Textarea::make('notes')->rows(5)
-                    ])->collapsible()->collapsed(),
+                    ])->columns(2),
 
-                ]),
+                ])
 
+                /*Forms\Components\Tabs::make()->tabs([
 
-            ])->columns(3);
+                    Forms\Components\Tabs\Tab::make('Основное')->icon('heroicon-o-user')->schema([
+                        TextInput::make('first_name'),
+                        TextInput::make('middle_name'),
+                        TextInput::make('last_name'),
+                        TextInput::make('email')->email(),
+                        TextInput::make('password')->password()->revealable()->columnSpan('full'),
+                    ])->columns(2),
+
+                    Forms\Components\Tabs\Tab::make('Контакты')->icon('heroicon-o-map')->schema([
+                        Select::make('country')->options(['Country 1', 'Country 2', 'Country 3']),
+                        Select::make('city')->options(['City 1', 'City 2', 'City 3']),
+                        Select::make('street')->options(['Street 1', 'Street 2', 'Street 3']),
+                        TextInput::make('zip'),
+                        TextInput::make('phone')->tel()->mask('+99 999 999-99-99'),
+                    ])->columns(2),
+
+                    Forms\Components\Tabs\Tab::make('Дополнительно')->icon('heroicon-o-user')->schema([
+                        Select::make('dob')->options(
+                            array_combine(
+                                range(date('Y'), 1900),
+                                range(date('Y'), 1900),
+                            )
+                        ),
+                        Radio::make('gender')->options(['Male', 'Female']),
+                    ])->columns(2),
+
+                    Forms\Components\Tabs\Tab::make('Аватар и примечение')->icon('heroicon-o-user')->schema([
+                        FileUpload::make('avatar')->image(),
+                        Forms\Components\Textarea::make('notes')->rows(5)
+                    ])->columns(2),
+
+                ])*/
+
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table
