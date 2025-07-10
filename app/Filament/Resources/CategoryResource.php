@@ -14,6 +14,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -57,13 +58,9 @@ class CategoryResource extends Resource
                             }),
 
                         TextInput::make('slug')
-                            /*->hidden(function (Forms\Get $get) {
-                                return !$get('title');
-                            })*/
-//                            ->hidden(fn (Forms\Get $get): bool => !$get('title'))
                             ->disabledOn('edit')
                             ->required()
-                            ->unique()
+                            ->unique(ignoreRecord: true)
                             ->helperText('Генерируется автоматически на основе наименования'),
 
                         Forms\Components\RichEditor::make('content')->columnSpan(2)->required()
@@ -74,6 +71,10 @@ class CategoryResource extends Resource
                 Forms\Components\Group::make()->schema([
 
                     Forms\Components\Section::make()->schema([
+
+                        Forms\Components\Toggle::make('is_featured')
+                            ->onColor('success')
+                            ->offColor('danger'),
 
                         FileUpload::make('image')
                             ->image()
@@ -89,8 +90,20 @@ class CategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
+            ->defaultPaginationPageOption(5)
+            ->extremePaginationLinks()
+            ->striped()
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('id')->label('ID'),
+                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\TextColumn::make('title'),
+                Tables\Columns\TextColumn::make('slug'),
+                Tables\Columns\IconColumn::make('is_featured')->boolean(),
+                /*Tables\Columns\ToggleColumn::make('is_featured')
+                    ->afterStateUpdated(function () {
+                        Notification::make()->title('Saved')->success()->send();
+                    }),*/
             ])
             ->filters([
                 //
