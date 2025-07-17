@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\Alignment;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -94,12 +95,22 @@ class CategoryResource extends Resource
             ->defaultPaginationPageOption(5)
             ->extremePaginationLinks()
             ->striped()
+            ->searchPlaceholder('Search by title & slug')
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID'),
-                Tables\Columns\ImageColumn::make('image'),
-                Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('slug'),
-                Tables\Columns\IconColumn::make('is_featured')->boolean(),
+                Tables\Columns\ImageColumn::make('image')->toggleable(),
+
+                Tables\Columns\ColumnGroup::make('Title & Slug', [
+                    Tables\Columns\TextColumn::make('title')->sortable()->searchable(),
+                    Tables\Columns\TextColumn::make('slug')
+                        ->sortable()
+                        ->searchable(isIndividual: true)
+                        ->copyable()
+                        ->tooltip('click for copy')->label('Slug (click for copy)')
+                        ->toggleable(),
+                ])->alignment(Alignment::Center),
+
+                Tables\Columns\IconColumn::make('is_featured')->boolean()->sortable(),
                 /*Tables\Columns\ToggleColumn::make('is_featured')
                     ->afterStateUpdated(function () {
                         Notification::make()->title('Saved')->success()->send();
