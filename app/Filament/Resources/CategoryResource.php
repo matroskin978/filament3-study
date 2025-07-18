@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\CategoryExporter;
+use App\Filament\Imports\CategoryImporter;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
@@ -20,6 +22,7 @@ use Filament\Support\Enums\Alignment;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -51,15 +54,15 @@ class CategoryResource extends Resource
                             ->required()
                             ->minLength(5)
                             ->live(true)
-                            ->afterStateUpdated(function (Forms\Set $set, ?string $state, string $operation) {
-                                if ($operation === 'edit') {
+                            ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get, ?string $state, string $operation) {
+                                if ($operation == 'edit' && $get('slug')) {
                                     return;
                                 }
                                 $set('slug', Str::slug($state));
                             }),
 
                         TextInput::make('slug')
-                            ->disabledOn('edit')
+//                            ->disabledOn('edit')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->helperText('Генерируется автоматически на основе наименования'),
@@ -119,8 +122,26 @@ class CategoryResource extends Resource
             ->filters([
                 //
             ])
+            ->headerActions([
+                Tables\Actions\ExportAction::make()
+                    ->exporter(CategoryExporter::class),
+                Tables\Actions\ImportAction::make()
+                    ->importer(CategoryImporter::class)
+                    ->csvDelimiter(';'),
+            ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\ReplicateAction::make()
+                        ->successRedirectUrl(fn(Model $replica) => route('filament.admin.resources.categories.edit', $replica))
+                        ->excludeAttributes(['slug']),
+                ])
+
+                /*Tables\Actions\Action::make('delete')
+                    ->requiresConfirmation()
+                    ->action(fn(Category $record) => $record->delete())*/
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -142,6 +163,7 @@ class CategoryResource extends Resource
             'index' => Pages\ListCategories::route('/'),
             'create' => Pages\CreateCategory::route('/create'),
             'edit' => Pages\EditCategory::route('/{record}/edit'),
+//            'view' => Pages\ViewCategory::route('/{record}')
         ];
     }
 }
