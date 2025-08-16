@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CategoryResource\Pages;
-use App\Filament\Resources\CategoryResource\RelationManagers;
-use App\Models\Category;
+use App\Filament\Resources\BrandResource\Pages;
+use App\Filament\Resources\BrandResource\RelationManagers;
+use App\Models\Brand;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,11 +14,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
-class CategoryResource extends Resource
+class BrandResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = Brand::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-globe-alt';
 
     public static function form(Form $form): Form
     {
@@ -54,15 +54,6 @@ class CategoryResource extends Resource
                 Forms\Components\Group::make()->schema([
                     Forms\Components\Section::make()->schema([
 
-                        Forms\Components\Select::make('parent_id')
-                            ->options(function () {
-                                return self::getCategoriesTree(Category::all());
-                            })
-                            ->disableOptionWhen(function (Forms\Get $get, string $value) {
-                                return $value == $get('id');
-                            })
-                            ->placeholder('Root category'),
-
                         Forms\Components\FileUpload::make('photo')
                             ->image()
                             ->directory("preview/" . date('Y') . '/' . date('m') . '/' . date('d')),
@@ -77,26 +68,15 @@ class CategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('id', 'desc')
+            ->defaultSort('title', 'asc')
             ->striped()
-            ->defaultPaginationPageOption(3)
-            ->paginated([3, 5, 10, 20, 'all'])
-            ->extremePaginationLinks()
             ->columns([
-
-                Tables\Columns\TextColumn::make('my_id')
-                    ->label('#')
-                    ->state(function (Tables\Contracts\HasTable $livewire, \stdClass $rowLoop) {
-                        return $rowLoop->iteration + ($livewire->getTableRecordsPerPage() * ($livewire->getTablePage() - 1));
-                    }),
 
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
 
                 Tables\Columns\ImageColumn::make('photo'),
 
                 Tables\Columns\TextColumn::make('title')->searchable()->sortable(),
-
-                Tables\Columns\TextColumn::make('parent.title')->sortable(),
 
             ])
             ->filters([
@@ -122,22 +102,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ListBrands::route('/'),
+            'create' => Pages\CreateBrand::route('/create'),
+            'edit' => Pages\EditBrand::route('/{record}/edit'),
         ];
     }
-
-    public static function getCategoriesTree($categories, $parentId = null, $depth = 0): array
-    {
-        $options = [];
-        foreach ($categories->where('parent_id', $parentId) as $category) {
-            $prefix = str_repeat('- ', $depth);
-            $options[$category->id] = $prefix . $category->title;
-            $children = self::getCategoriesTree($categories, $category->id, $depth + 1);
-            $options += $children;
-        }
-        return $options;
-    }
-
 }

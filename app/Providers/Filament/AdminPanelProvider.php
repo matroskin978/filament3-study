@@ -32,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('My Site')
             ->brandLogo(asset('logo.svg'))
             ->brandLogoHeight('50px')
+            ->sidebarCollapsibleOnDesktop(true)
 //            ->profile()
 //            ->registration()
 //            ->passwordReset()
