@@ -56,6 +56,11 @@ class CategoryResource extends Resource
                 Forms\Components\Group::make()->schema([
                     Forms\Components\Section::make()->schema([
 
+                        Forms\Components\Select::make('Filter Groups')
+                            ->relationship('filterGroups', 'title')
+                            ->multiple()
+                            ->preload(),
+
                         Forms\Components\Select::make('parent_id')
                             ->options(function () {
                                 return Category::getCategoriesTree(Category::all());
