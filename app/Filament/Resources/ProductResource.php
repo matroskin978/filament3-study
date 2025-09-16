@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -76,6 +77,15 @@ class ProductResource extends Resource
                 Forms\Components\Group::make([
 
                     Forms\Components\Section::make()->schema([
+
+                        Forms\Components\Select::make('filter_id')
+                            ->label('Select filters')
+                            ->relationship('filters', 'title')
+                            ->options(self::getFilters())
+                            ->multiple()
+                            ->searchable()
+                            ->placeholder('Start typing filter title')
+                            ->columnSpanFull(),
 
                         Forms\Components\TextInput::make('sku')
                             ->label('SKU')
@@ -206,5 +216,25 @@ class ProductResource extends Resource
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    private static function getFilters()
+    {
+        $groupFilters = DB::table('category_filtergroup')
+            ->selectRaw(
+                'distinct category_filtergroup.filtergroup_id,
+                filtergroups.title as group_title,
+                filters.id as filter_id,
+                filters.title as filter_title'
+            )
+            ->join('filtergroups', 'category_filtergroup.filtergroup_id', '=', 'filtergroups.id')
+            ->join('filters', 'filters.filtergroup_id', '=', 'filtergroups.id')
+            ->get();
+
+        $filter_groups = [];
+        foreach ($groupFilters as $filter) {
+            $filter_groups["{$filter->filtergroup_id} - {$filter->group_title}"][$filter->filter_id] = $filter->filter_title;
+        }
+        return $filter_groups;
     }
 }
