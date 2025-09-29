@@ -67,7 +67,14 @@ class OrderResource extends Resource
 
                         Forms\Components\TextInput::make('address')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('clear')
+                                    ->icon('heroicon-o-x-mark')
+                                    ->color('danger')
+                                    ->tooltip('Clear field')
+                                    ->action(fn($set) => $set('address', ''))
+                            ),
 
                         Forms\Components\Select::make('status')
                             ->options([
@@ -88,6 +95,8 @@ class OrderResource extends Resource
 
                         Forms\Components\Repeater::make('products')
                             ->relationship('orderProducts')
+                            ->live()
+                            ->afterStateUpdated(fn($state, $get, $set) => self::recalculateTotal($set, 'total', $get('products')))
                             ->schema([
 
                                 Forms\Components\Select::make('product_id')
@@ -102,19 +111,23 @@ class OrderResource extends Resource
                                             ->toArray();
                                     })
                                     ->getOptionLabelUsing(fn($value): ?string => Product::find($value)?->title)
-                                    ->afterStateUpdated(function ($state, $set) {
+                                    ->afterStateUpdated(function ($state, $set, $get) {
                                         $product = Product::query()->find($state);
 
                                         $set('title', $product?->title);
                                         $set('slug', $product?->slug);
                                         $set('price', $product?->price);
                                         $set('photo', $product?->photo);
+
+                                        self::recalculateTotal($set, '../../total', $get('../'));
                                     }),
 
                                 Forms\Components\TextInput::make('quantity')
                                     ->required()
                                     ->numeric()
-                                    ->default(1),
+                                    ->default(1)
+                                    ->live()
+                                    ->afterStateUpdated(fn($state, $get, $set) => self::recalculateTotal($set, '../../total', $get('../'))),
 
                                 Forms\Components\TextInput::make('title')
                                     ->required()
@@ -159,6 +172,19 @@ class OrderResource extends Resource
                 ])->columnSpanFull(),
 
             ]);
+    }
+
+    private static function recalculateTotal($set, $field_set, $field_get): void
+    {
+        $items = $field_get ?? [];
+        $total = 0;
+
+        foreach ($items as $item) {
+            $price = $item['price'] ?? 0;
+            $quantity = $item['quantity'] ?? 0;
+            $total += $price * $quantity;
+        }
+        $set($field_set, $total);
     }
 
     public static function table(Table $table): Table
